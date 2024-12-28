@@ -1,0 +1,66 @@
+groups:
+  - name: basic_alerts
+    rules:
+    - alert: ContainerDown
+      expr: absent(container_last_seen)
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Container down
+        description: Container has been down for more than 5 minutes
+    - alert: PrometheusDown
+      expr: absent(up{job="prometheus"})
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Prometheus down
+        description: Prometheus has been down for more than 5 minutes
+
+  - name: SystemResources
+    rules:
+    - alert: HighCPUUsage
+      expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage"
+        description: "CPU usage exceeds 80%"
+
+    - alert: HighMemoryUsage
+      expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage"
+        description: "Memory usage exceeds 80%"
+
+    - alert: HighDiskUsage
+      expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High disk usage"
+        description: "Disk usage exceeds 80%"
+
+    - alert: HighDiskIOUsage
+      expr: rate(node_disk_io_time_seconds_total[5m]) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High disk I/O"
+        description: "Disk I/O utilization exceeds 80%"
+
+    - alert: NetworkErrors
+      expr: rate(node_network_transmit_errs_total[5m]) + rate(node_network_receive_errs_total[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network errors detected"
+        description: "Network errors detected on interface"
